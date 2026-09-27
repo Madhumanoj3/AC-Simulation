@@ -1,0 +1,572 @@
+/* ============================================================
+   REFRIGERATION CYCLE — 4-COMPONENT REAL-TIME MONITOR
+   Style target: BMS / HMI / SCADA operator screen.
+   No fault/alarm styling in this version — this is a real-time
+   working demonstration of Compressor / Condenser / Capillary
+   Tube / Evaporator only.
+   ============================================================ */
+
+:root {
+  --bg: #d9dcdf;
+  --panel-bg: #eef0f1;
+  --panel-bg-alt: #e4e7e9;
+  --header-bg: #23282d;
+  --line: #4b5157;
+  --line-soft: #9aa0a6;
+  --digital-bg: #0c1210;
+
+  --c-green: #1f9d55;
+  --c-green-glow: #35c96f;
+  --c-blue: #1c7fc4;
+  --c-blue-glow: #4fb3ef;
+  --c-orange: #d97b19;
+  --c-red: #c8321f;
+  --c-gray: #7a8188;
+  --c-text: #1c2023;
+  --c-text-dim: #565d63;
+  --c-text-inverse: #e7e9ea;
+
+  --font-ui: "Segoe UI", "Inter", Arial, sans-serif;
+  --font-mono: "Consolas", "Roboto Mono", "Courier New", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--c-text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.hmi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--header-bg);
+  color: var(--c-text-inverse);
+  border-bottom: 3px solid var(--line);
+  padding: 10px 18px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hmi-header .title-block { display: flex; flex-direction: column; line-height: 1.25; }
+.hmi-header .title-block .system-title {
+  font-size: 18px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+}
+.hmi-header .title-block .zone-subtitle { font-size: 12px; color: #b9c0c6; letter-spacing: 0.04em; }
+
+.hmi-header .meta-block { display: flex; gap: 22px; font-family: var(--font-mono); font-size: 12px; }
+.hmi-header .meta-item { display: flex; flex-direction: column; align-items: flex-start; min-width: 90px; }
+.hmi-header .meta-item .meta-label { color: #8b939a; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+.hmi-header .meta-item .meta-value { color: #f1f3f4; font-weight: 600; }
+.hmi-header .meta-item.mode-live .meta-value { color: var(--c-green-glow); }
+
+/* ============================================================
+   MAIN LAYOUT
+   ============================================================ */
+
+.hmi-main {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 10px;
+  padding: 10px;
+  align-items: start;
+}
+
+.panel { background: var(--panel-bg); border: 1px solid var(--line); box-shadow: inset 0 0 0 1px #ffffff70; }
+.panel-header {
+  background: var(--panel-bg-alt);
+  border-bottom: 1px solid var(--line);
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text-dim);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.panel-body { padding: 10px; }
+
+.mimic-column { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.mimic-panel .panel-body { padding: 4px; }
+
+.mimic-svg-wrap {
+  width: 100%;
+  overflow-x: auto;
+  background: #f4f5f6;
+  background-image: linear-gradient(#c9cdd0 1px, transparent 1px), linear-gradient(90deg, #c9cdd0 1px, transparent 1px);
+  background-size: 28px 28px;
+  border: 1px solid var(--line-soft);
+}
+.mimic-svg-wrap svg { display: block; width: 100%; height: auto; min-width: 700px; }
+
+.control-strip { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+.control-group { display: flex; flex-direction: column; gap: 4px; }
+.control-group .control-label { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-text-dim); font-weight: 700; }
+.control-row { display: flex; gap: 6px; align-items: center; }
+
+.side-column { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+button {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 8px 16px;
+  background: #f2f3f4;
+  color: var(--c-text);
+  cursor: pointer;
+  text-transform: uppercase;
+  box-shadow: inset 0 -2px 0 #00000022;
+}
+button:hover { background: #ffffff; }
+button:active { box-shadow: inset 0 2px 0 #00000022; transform: translateY(1px); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+button.btn-start { background: #1c6b3a; color: #eafff0; border-color: #0e3a1f; }
+button.btn-start:hover { background: #1f7d43; }
+button.btn-stop { background: #8f2318; color: #ffefec; border-color: #4d1109; }
+button.btn-stop:hover { background: #a52a1d; }
+
+/* ============================================================
+   STATUS PANEL
+   ============================================================ */
+
+.status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.status-item { display: flex; flex-direction: column; gap: 3px; border: 1px solid var(--line-soft); background: #f6f7f8; padding: 6px 8px; }
+.status-item .status-label { font-size: 10px; color: var(--c-text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+.status-item .status-value { font-family: var(--font-mono); font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+
+.status-lamp { width: 9px; height: 9px; border-radius: 50%; background: var(--c-gray); box-shadow: inset 0 0 0 1px #00000033; flex: none; }
+.status-lamp.on { background: var(--c-green); box-shadow: 0 0 6px 1px var(--c-green-glow); }
+.status-lamp.cool { background: var(--c-blue); box-shadow: 0 0 6px 1px var(--c-blue-glow); }
+.status-lamp.warm { background: var(--c-orange); box-shadow: 0 0 6px 1px #f0a24a; }
+
+.text-green { color: var(--c-green); }
+.text-orange { color: var(--c-orange); }
+.text-gray { color: var(--c-gray); }
+
+/* ============================================================
+   LIVE PARAMETERS
+   ============================================================ */
+
+.params-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.param-box { border: 1px solid var(--line); background: #f6f7f8; }
+.param-box .param-label {
+  font-size: 10px; padding: 3px 6px; color: var(--c-text-dim);
+  text-transform: uppercase; letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--line-soft); background: var(--panel-bg-alt);
+}
+.param-box .param-value {
+  font-family: var(--font-mono); background: var(--digital-bg); color: var(--c-green-glow);
+  font-size: 16px; font-weight: 700; padding: 6px 8px; text-align: right; letter-spacing: 0.02em;
+}
+.param-box.blue .param-value { color: var(--c-blue-glow); }
+.param-box.warm .param-value { color: #ffbf5c; }
+
+/* ============================================================
+   EVENT LOG
+   ============================================================ */
+
+.log-panel { grid-column: 1 / -1; }
+.log-list { list-style: none; margin: 0; padding: 0; max-height: 140px; overflow-y: auto; font-family: var(--font-mono); font-size: 12px; }
+.log-list li { display: flex; gap: 12px; padding: 3px 10px; border-bottom: 1px solid #d6d9db; }
+.log-list li:nth-child(odd) { background: #f5f6f7; }
+.log-list .log-time { color: var(--c-text-dim); flex: none; width: 74px; }
+.log-list .log-msg { flex: 1; }
+.log-list li.sev-ok .log-msg { color: var(--c-green); }
+
+/* ============================================================
+   SVG MACHINE MIMIC
+   ============================================================ */
+
+.mimic-svg-wrap svg text { font-family: var(--font-mono); fill: var(--c-text); }
+.mimic-svg-wrap svg .label-major { font-size: 13px; font-weight: 700; letter-spacing: 0.04em; }
+.mimic-svg-wrap svg .label-minor { font-size: 10px; fill: var(--c-text-dim); letter-spacing: 0.03em; }
+.mimic-svg-wrap svg .readout { font-size: 12px; font-weight: 700; }
+
+.mimic-svg-wrap svg .pipe { fill: none; stroke: #5a6167; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.mimic-svg-wrap svg .pipe-inner { fill: none; stroke: #babfc3; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.mimic-svg-wrap svg .comp-body { stroke: var(--line); stroke-width: 2; fill: #cfd3d6; transition: fill 0.7s ease; }
+.component.state-off .comp-body { fill: #cfd3d6; }
+.component.state-running .comp-body { fill: #bfe3cb; }
+.component.state-cooling .comp-body { fill: #bcdcf2; }
+.component.state-hot .comp-body { fill: #f2c9a8; }
+
+.component .comp-indicator { fill: var(--c-gray); }
+.component.state-running .comp-indicator, .component.state-on .comp-indicator { fill: var(--c-green); }
+.component.state-cooling .comp-indicator { fill: var(--c-blue); }
+.component.state-hot .comp-indicator { fill: var(--c-orange); }
+
+/* Compressor motor active heartbeat pulse */
+.compressor-pulse { transform-box: fill-box; transform-origin: center; opacity: 0; }
+.compressor-pulse.active { animation: compPulse 1.0s ease-in-out infinite; }
+@keyframes compPulse {
+  0%   { opacity: 0.75; transform: scale(0.90); }
+  50%  { opacity: 0.08; transform: scale(1.20); }
+  100% { opacity: 0.75; transform: scale(0.90); }
+}
+
+/* Evaporator frost/glaze layer — fades in when cooling active */
+.evap-frost-layer { transition: opacity 1.2s ease; }
+.component.state-cooling .evap-frost-layer { opacity: 1; }
+
+/* Condenser heat glaze layer — fades in when condensing (state-hot) */
+.cond-heat-layer { transition: opacity 1.2s ease; }
+.component.state-hot .cond-heat-layer { opacity: 1; }
+
+/* Condenser heat-shed shimmer */
+.heat-shimmer { stroke: var(--c-orange); stroke-width: 1.5; fill: none; opacity: 0; }
+.heat-shimmer.active { animation: shimmerFade 1.4s ease-in-out infinite; }
+@keyframes shimmerFade {
+  0%, 100% { opacity: 0; transform: translateY(0); }
+  50% { opacity: 0.65; transform: translateY(-4px); }
+}
+
+/* Evaporator cold shimmer */
+.cold-shimmer { stroke: var(--c-blue); stroke-width: 1.5; fill: none; opacity: 0; }
+.cold-shimmer.active { animation: coldFade 1.6s ease-in-out infinite; }
+@keyframes coldFade {
+  0%, 100% { opacity: 0; transform: translateY(0); }
+  50% { opacity: 0.6; transform: translateY(4px); }
+}
+
+/* Capillary tube — subtle glow while metering flow */
+.capillary-coil { fill: none; stroke: #5a6167; stroke-width: 2.5; }
+.capillary-glow { fill: none; stroke: var(--c-blue-glow); stroke-width: 2; opacity: 0; transition: opacity 0.8s ease; }
+.capillary-glow.active { opacity: 0.75; }
+
+/* Refrigerant flow dots */
+.flow-dot { fill: var(--c-blue-glow); filter: drop-shadow(0 0 2px #1c7fc4aa); }
+.flow-dot.hot { fill: #e2734a; filter: drop-shadow(0 0 2px #c8502599); }
+
+/* Sensor probes */
+.sensor-probe circle { fill: #fff; stroke: var(--line); stroke-width: 1.5; }
+.sensor-probe .sensor-crosshair { stroke: var(--c-text-dim); stroke-width: 1; }
+.sensor-readout { font-family: var(--font-mono); font-size: 11px; font-weight: 700; fill: var(--c-text); }
+.sensor-readout.cool { fill: var(--c-blue); }
+.sensor-readout.hot { fill: var(--c-orange); }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 980px) {
+  .hmi-main { grid-template-columns: 1fr; }
+}
+@media (max-width: 620px) {
+  .hmi-header { flex-direction: column; align-items: flex-start; }
+  .status-grid, .params-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   COLORED REFRIGERANT PIPE LINES
+   ============================================================ */
+
+/* High-P hot gas: compressor → condenser (red) */
+.pipe-hot       { fill: none; stroke: #a93226; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }
+.pipe-hot-inner { fill: none; stroke: #e74c3c; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+/* High-P liquid: condenser → capillary (dark red / maroon) */
+.pipe-liquid       { fill: none; stroke: #7b241c; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }
+.pipe-liquid-inner { fill: none; stroke: #c0392b; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Low-P cold vapour: capillary → evaporator → compressor (blue) */
+.pipe-cold       { fill: none; stroke: #1a5276; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }
+.pipe-cold-inner { fill: none; stroke: #2e86c1; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ============================================================
+   HEAT EXCHANGER FINS & TUBE PASSES
+   ============================================================ */
+.fin-line  { fill: none; stroke: #9aa0a6; stroke-width: 1; }
+.tube-pass { fill: none; stroke: #7a8188; stroke-width: 2; }
+
+/* ============================================================
+   FAN BLADE ROTATION (triggered by component state classes)
+   ============================================================ */
+.fan-rotor {
+  transform-origin: 0px 0px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+}
+.component.state-running .fan-rotor { animation: fanSpin 0.38s linear infinite; }
+.component.state-hot     .fan-rotor { animation: fanSpin 0.45s linear infinite; }
+.component.state-cooling .fan-rotor { animation: fanSpin 0.60s linear infinite; }
+.component.state-off     .fan-rotor { animation: none; }
+@keyframes fanSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Pause animations when historical simulation playback is paused or in standby */
+.playback-paused .fan-rotor {
+  animation: none !important;
+  animation-play-state: paused !important;
+}
+.playback-paused .compressor-pulse {
+  animation: none !important;
+  opacity: 0 !important;
+}
+.playback-paused .heat-shimmer,
+.playback-paused .cold-shimmer {
+  animation: none !important;
+  opacity: 0 !important;
+}
+.playback-paused .capillary-glow {
+  opacity: 0 !important;
+}
+
+/* ============================================================
+   CAPILLARY TUBE COPPER HELICAL COIL
+   ============================================================ */
+.cap-coil-back  { filter: drop-shadow(0 2px 2px rgba(0,0,0,0.35)); }
+.cap-coil-front { filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25)); }
+.cap-coil-shine { pointer-events: none; }
+
+/* Capillary glow — active flow effect */
+.capillary-glow { opacity: 0; transition: opacity 0.8s ease; }
+.capillary-glow.active { opacity: 0.85; filter: drop-shadow(0 0 6px #4fb3ef); }
+
+/* Wider minimum for the new 1100px viewBox */
+.mimic-svg-wrap svg { display: block; width: 100%; height: auto; min-width: 900px; }
+
+/* ============================================================
+   DIRECTIONAL FLOW ARROWS
+   ============================================================ */
+.flow-arrow {
+  filter: drop-shadow(0 1.5px 2px rgba(0,0,0,0.3));
+  transition: opacity 0.3s ease;
+}
+.flow-arrow-hot  { fill: #e74c3c; stroke: #922b21; stroke-width: 1.2; }
+.flow-arrow-cold { fill: #2e86c1; stroke: #1b4f72; stroke-width: 1.2; }
+
+/* ============================================================
+   SIMULATION MODE SWITCHER & HISTORICAL PLAYBACK CONTROLS
+   ============================================================ */
+
+.mode-switcher {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid var(--line-soft);
+  padding-bottom: 8px;
+  width: 100%;
+}
+
+.mode-tab {
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 3px;
+  cursor: pointer;
+  background: #eaedf0;
+  color: var(--c-text-dim);
+  border: 1px solid var(--line);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mode-tab:hover {
+  background: #ffffff;
+  color: var(--c-text);
+}
+
+.mode-tab.active {
+  background: #1b4f72;
+  color: #ffffff;
+  border-color: #0f324a;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+.mode-tab.active.live {
+  background: #1c6b3a;
+  border-color: #0e3a1f;
+}
+
+.mode-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.db-status-badge {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  padding: 4px 8px;
+  border-radius: 2px;
+  background: #eef1f3;
+  color: #555;
+  border: 1px solid var(--line-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.db-status-badge.saved {
+  background: #e6f7ec;
+  color: #1c6b3a;
+  border-color: #b7e4c7;
+}
+.db-status-badge.error {
+  background: #fdeeed;
+  color: #a52a1d;
+  border-color: #f5c2be;
+}
+
+/* Historical Controls Layout */
+.hist-query-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  background: #f6f8f9;
+  padding: 8px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+}
+
+.hist-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.hist-field label {
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--c-text-dim);
+}
+
+.hist-input, .hist-select {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: #ffffff;
+  color: var(--c-text);
+}
+
+.btn-hist-load {
+  background: #1b4f72;
+  color: #ffffff;
+  border-color: #0f324a;
+  padding: 6px 14px;
+}
+.btn-hist-load:hover { background: #236592; }
+
+.btn-preset {
+  font-size: 10px;
+  padding: 4px 8px;
+  background: #e9ecef;
+  color: #333;
+  border: 1px solid #ced4da;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.btn-preset:hover { background: #dde2e6; }
+
+/* Timeline Scrubber */
+.hist-player-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid var(--line-soft);
+  padding: 10px 12px;
+  border-radius: 3px;
+}
+
+.hist-scrubber-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hist-slider {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: #d8dde1;
+  outline: none;
+  cursor: pointer;
+  accent-color: #1b4f72;
+}
+
+.hist-time-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: #1b4f72;
+  background: #e8f4fc;
+  padding: 3px 8px;
+  border-radius: 2px;
+  border: 1px solid #b8daf2;
+  white-space: nowrap;
+}
+
+.hist-controls-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.hist-btn-group {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.btn-hist-play {
+  background: #2b6cb0;
+  color: #fff;
+  border-color: #1a4971;
+  padding: 6px 14px;
+  min-width: 85px;
+}
+.btn-hist-play:hover { background: #3182ce; }
+.btn-hist-play.playing { background: #d69e2e; color: #fff; border-color: #975a16; }
+
+.btn-hist-step {
+  padding: 6px 10px;
+  background: #f1f3f5;
+  color: #333;
+}
+.btn-hist-step:hover { background: #e2e6ea; }
+
+.hist-speed-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-text-dim);
+}
+
+.hist-info-msg {
+  font-size: 11px;
+  color: var(--c-text-dim);
+  font-style: italic;
+}
+
